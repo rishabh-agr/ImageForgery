@@ -2,3 +2,5 @@ tensorflow
 keras
 PIL
 numpy
+gdown
+streamlit
