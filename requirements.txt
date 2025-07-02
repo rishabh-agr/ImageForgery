@@ -1,6 +1,5 @@
-tensorflow
-keras
-PIL
-numpy
-gdown
 streamlit
+tensorflow==2.15.0
+gdown
+numpy
+Pillow
