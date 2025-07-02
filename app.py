@@ -1,21 +1,33 @@
 import streamlit as st
+import numpy as np
+import tensorflow as tf
+from PIL import Image
+import gdown
+import os
 
+# ------------------ Streamlit Page Config ------------------ #
 st.set_page_config(
     page_title="Deepfake Image Detector",
     layout="centered",
     initial_sidebar_state="auto"
 )
 
-import numpy as np
-import tensorflow as tf
-from PIL import Image
-
+# ------------------ Model Download & Load ------------------ #
 @st.cache_resource
 def load_model():
-    return tf.keras.models.load_model("final_model.h5")
+    model_path = "final_model.h5"
+    file_id = "1AXnbi7GVCho8oOTkV2y5bWcVreBH2rFG"  # 🔁 Replace with your actual file ID
+    url = f"https://drive.google.com/uc?id={file_id}"
+
+    if not os.path.exists(model_path):
+        with st.spinner("Downloading model from Google Drive..."):
+            gdown.download(url, model_path, quiet=False)
+
+    return tf.keras.models.load_model(model_path)
 
 model = load_model()
 
+# ------------------ Image Preprocessing ------------------ #
 def preprocess_image(image):
     image = image.convert("RGB")
     image = image.resize((256, 256))
@@ -23,11 +35,11 @@ def preprocess_image(image):
     image = np.expand_dims(image, axis=0)
     return image
 
-
+# ------------------ UI Styling ------------------ #
 st.markdown(
     """
     <style>
-    /* Light mode (default) */
+    /* Light & Dark mode UI styling */
     .stApp {
         background-color: #f5f7fa;
         color: #333333;
@@ -94,29 +106,16 @@ st.markdown(
         border-radius: 8px;
         font-weight: 600;
     }
-
-    /* Dark mode overrides */
     @media (prefers-color-scheme: dark) {
         .stApp {
             background-color: #0f172a;
             color: #e0e7ff;
-            padding: 2rem 1rem;
         }
         .css-1d391kg h1 {
             color: #e0e7ff;
         }
         .stFileUploader > div {
-            border: 2px dashed #3b82f6;
             background-color: #1e293b;
-        }
-        .stFileUploader > div:hover {
-            border-color: #60a5fa;
-        }
-        .stImage > img {
-            box-shadow: 0 8px 20px rgba(255, 255, 255, 0.12);
-            border-radius: 12px;
-            margin-top: 1rem;
-            margin-bottom: 1.5rem;
         }
         .prediction-text {
             color: #93c5fd;
@@ -126,16 +125,12 @@ st.markdown(
         }
         .stProgress > div > div > div > div {
             background-color: #60a5fa !important;
-            border-radius: 10px;
         }
         .stButton>button {
             background-color: #3b82f6;
-            color: white;
-            box-shadow: 0 4px 14px rgba(59, 130, 246, 0.9);
         }
         .stButton>button:hover {
             background-color: #60a5fa;
-            box-shadow: 0 6px 20px rgba(96, 165, 250, 0.9);
         }
         .stInfo {
             background-color: #1e293b;
@@ -148,7 +143,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-
+# ------------------ Main App ------------------ #
 st.title("🕵️‍♂️ Deepfake Image Detector")
 
 uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
